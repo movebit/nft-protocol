@@ -261,4 +261,49 @@ module nft_protocol::collection {
 
         (cap, col)
     }
+
+    #[test_only]
+    struct Witness has drop {}
+
+    struct TestC has drop {}
+
+    struct TestD has store {}
+
+    const OWNER: address = @0xA123;
+
+    const FAKE_OWNER: address = @0xA234;
+
+    #[test]
+    fun test_remove_domain() {
+        use nft_protocol::collection::{Self, Collection};
+        use sui::transfer;
+        use sui::transfer::transfer;
+        use sui::test_scenario::{Self, ctx};
+        let scenario = test_scenario::begin(OWNER);
+        let scenarios = &mut scenario;
+        let ctx = ctx(scenarios);
+        let (mintcap, collection) = collection::create<TestC>(&TestC {}, ctx);
+
+        collection::add_domain<TestC, TestD>(&mut collection, &ownercap, TestD{});
+
+        collection::assert_domain<TestC, TestD>(&collection);
+
+        transfer(mintcap, OWNER);
+        // transfer(collection, OWNER);
+        transfer::share_object<Collection<TestC>>(collection);
+
+        test_scenario::next_tx(scenarios, OWNER);
+
+        // let collection = test_scenario::take_from_sender<Collection<TestC>>(scenarios);
+        let collection = test_scenario::take_shared<Collection<TestC>>(scenarios);
+
+        let TestD {} = collection::remove_domain<TestC, Witness, TestD>(Witness {}, &mut collection);
+
+        collection::assert_no_domain<TestC, TestD>(&collection);
+
+        // test_scenario::return_to_sender<Collection<TestC>>(scenarios, collection);
+        test_scenario::return_shared<Collection<TestC>>(collection);
+
+        test_scenario::end(scenario);
+    }
 }

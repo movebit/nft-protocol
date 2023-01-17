@@ -57,6 +57,35 @@ module nft_protocol::test_nft {
     }
 
     #[test]
+    fun remove_domain() {
+        use sui::transfer;
+        let scenario = test_scenario::begin(OWNER);
+        let scenarios = &mut scenario;
+        let ctx = ctx(scenarios);
+
+        let nft = nft::new(&Witness {}, OWNER, ctx);
+
+        nft::add_domain(&mut nft, DomainA {}, ctx);
+
+        // If domain does not exist this function call will fail
+        nft::assert_domain<Foo, DomainA>(&nft);
+
+        // transfer(nft, OWNER);
+        transfer::share_object<Nft<Foo>>(nft);
+
+        test_scenario::next_tx(scenarios, FAKE_OWNER);
+
+        // let nft = test_scenario::take_from_sender<Nft<Foo>>(scenarios);
+        let nft = test_scenario::take_shared<Nft<Foo>>(scenarios);
+        let DomainA {} = nft::remove_domain<Foo, Witness, DomainA>(Witness {}, &mut nft);
+        nft::assert_no_domain<Foo, DomainA>(&nft);
+        // test_scenario::return_to_sender<Nft<Foo>>(scenarios, nft);
+        test_scenario::return_shared<Nft<Foo>>(nft);
+
+        test_scenario::end(scenario);
+    }
+
+    #[test]
     fun borrows_domain_mut() {
         let scenario = test_scenario::begin(OWNER);
         let ctx = ctx(&mut scenario);
