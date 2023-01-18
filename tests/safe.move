@@ -995,4 +995,39 @@ module nft_protocol::test_safe {
 
         wl
     }
+
+    #[test]
+    fun test_create_transfer_cap() {
+
+        let scenario = test_scenario::begin(USER);
+        let sender = tx_context::sender(ctx(&mut scenario));
+
+        let owner_cap = safe::create_safe(ctx(&mut scenario));
+
+        test_scenario::next_tx(&mut scenario, USER);
+
+        let safe: Safe = test_scenario::take_shared(&scenario);
+
+        let nft = nft::new<Foo, Witness>(
+            &Witness {}, sender, ctx(&mut scenario)
+        );
+        let nft_id = object::id(&nft);
+
+        safe::deposit_nft(nft, &mut safe, ctx(&mut scenario));
+
+        let i = 0;
+        while(i < 3) {
+            safe::create_transfer_cap_for_sender(//此处为方便测试直接将cap转给sender，也可使用create_transfer_cap取得cap的返回值再传给其他人。
+            nft_id,
+            &owner_cap,
+            &mut safe,
+            ctx(&mut scenario)
+        );
+        i = i + 1;
+        };
+
+        transfer(owner_cap, USER);
+        test_scenario::return_shared(safe);
+        test_scenario::end(scenario);
+    }
 }

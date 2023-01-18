@@ -70,17 +70,18 @@ module nft_protocol::test_nft {
         // If domain does not exist this function call will fail
         nft::assert_domain<Foo, DomainA>(&nft);
 
-        // transfer(nft, OWNER);
-        transfer::share_object<Nft<Foo>>(nft);
+        // transfer(nft, OWNER);//正常调用时使用，调用流程为将nft传给OWNER，然后使用OWNER进行下一步交易，接着将DomainA从nft移除。用来验证函数中assert_same_module_as_witness<W, D>();D和W写反的问题。正确的应该是assert_same_module_as_witness<D, W>()；
+        transfer::share_object<Nft<Foo>>(nft);//正常调用时注释掉，使用情况：当nft为share状态时，无论使用OWNER还是FAKE_OWNER去进行下一步交易，都能将DomainA从nft移除。前提是是remove能正常调用，将assert_same_module_as_witness<W, D>()；D和W改变位置；
 
-        test_scenario::next_tx(scenarios, FAKE_OWNER);
+        test_scenario::next_tx(scenarios, FAKE_OWNER);//正常调用时改为OWNER，使用OWNER进行下一步交易；当nft为share状态时，可分别使用OWNER和FAKE_OWNER验证能否正常将DomainA从nft移除。
 
-        // let nft = test_scenario::take_from_sender<Nft<Foo>>(scenarios);
-        let nft = test_scenario::take_shared<Nft<Foo>>(scenarios);
+
+        // let nft = test_scenario::take_from_sender<Nft<Foo>>(scenarios);//正常调用时使用
+        let nft = test_scenario::take_shared<Nft<Foo>>(scenarios);//正常调用时注释掉
         let DomainA {} = nft::remove_domain<Foo, Witness, DomainA>(Witness {}, &mut nft);
         nft::assert_no_domain<Foo, DomainA>(&nft);
-        // test_scenario::return_to_sender<Nft<Foo>>(scenarios, nft);
-        test_scenario::return_shared<Nft<Foo>>(nft);
+        // test_scenario::return_to_sender<Nft<Foo>>(scenarios, nft);//正常调用时使用
+        test_scenario::return_shared<Nft<Foo>>(nft);//正常调用时注释掉
 
         test_scenario::end(scenario);
     }

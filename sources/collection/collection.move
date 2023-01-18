@@ -197,6 +197,7 @@ module nft_protocol::collection {
         collection: &mut Collection<C>,
     ): D {
         utils::assert_same_module_as_witness<W, D>();
+        // utils::assert_same_module_as_witness<W, D>();//for test
         assert_domain<C, D>(collection);
 
         bag::remove(&mut collection.domains, utils::marker<D>())
@@ -274,7 +275,7 @@ module nft_protocol::collection {
     const FAKE_OWNER: address = @0xA234;
 
     #[test]
-    fun test_remove_domain() {
+    fun test_remove_domain() {//测试流程同nft
         use nft_protocol::collection::{Self, Collection};
         use sui::transfer;
         use sui::transfer::transfer;

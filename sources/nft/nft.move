@@ -216,6 +216,7 @@ module nft_protocol::nft {
         nft: &mut Nft<C>,
     ): D {
         utils::assert_same_module_as_witness<W, D>();
+        // utils::assert_same_module_as_witness<D, W>();//for test
         assert_domain<C, D>(nft);
 
         bag::remove(&mut nft.bag, utils::marker<D>())

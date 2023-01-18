@@ -30,6 +30,7 @@ module nft_protocol::unprotected_safe {
     use nft_protocol::nft::{Self, Nft};
     use nft_protocol::transfer_allowlist::Allowlist;
     use nft_protocol::utils;
+    use std::debug;//for tset
 
     use sui::event;
     use sui::object::{Self, ID, UID};
@@ -156,6 +157,7 @@ module nft_protocol::unprotected_safe {
         if (ref.transfer_cap_counter == 1) {
             ref.version = new_id(ctx);
         };
+        debug::print(&ref.transfer_cap_counter);//for test
 
         TransferCap {
             id: object::new(ctx),
